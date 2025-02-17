@@ -1,0 +1,48 @@
+<%- include("partials/head.ejs") %>
+<%- include("partials/header.ejs") %>
+
+<h2>Travels List</h2>
+
+<% if (success.length) { %>
+  <div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (error.length) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<!-- Add Travel Button -->
+<a href="/travels/add">
+  <button type="button">Add Travel</button>
+</a>
+
+<table id="jobs-table">
+  <tr id="jobs-table-header">
+    <th>Place Name</th>
+    <th>Location</th>
+    <th>Visit Date</th>
+    <th colspan="2"></th>
+  </tr>
+  <% if (travels && travels.length) { %>
+    <% travels.forEach((travel) => { %>
+      <tr>
+        <td><%= travel.placeName %></td>
+        <td><%= travel.location %></td>
+        <td><%= travel.visitDate.toISOString().split('T')[0]%></td>
+        <td>
+          <a href="/travels/edit/<%= travel.id %>">
+            <button type="button">Edit</button>
+          </a>
+        </td>
+        <td>
+          <form method="POST"  action="/travels/delete/<%= travel.id %>" style="display: inline">
+            <button>Delete</button>
+            <input type="hidden" name="_csrf" value="<%= _csrf %>" />
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  <% } %>
+</table>
+
+<%- include("partials/footer.ejs") %>
