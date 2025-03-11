@@ -82,7 +82,11 @@ app.use(csrf_middleware);
 
 // Properly Set CSRF Token in Views
 app.use((req, res, next) => {
-  res.locals.csrfToken = csrf.token(req, res);
+  try {
+    res.locals.csrfToken = req.csrfToken();
+  } catch (err) {
+    res.locals.csrfToken = null; // Handle missing token 
+  }
   next();
 });
 
@@ -92,7 +96,27 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  if (req.path == "/multiply") {
+    res.set("Content-Type", "application/json");
+  } else {
+    res.set("Content-Type", "text/html");
+  }
+  next();
+});
+
 // Routes
+//route for testing
+app.get("/multiply", (req, res) => {
+  const result = req.query.first * req.query.second;
+  if (result.isNaN) {
+    result = "NaN";
+  } else if (result == null) {
+    result = "null";
+  }
+  res.json({ result: result });
+});
+
 app.use("/secretWord", auth, secretWordRouter);
 app.use(require("./middleware/storeLocals"));
 
@@ -112,17 +136,23 @@ app.use((err, req, res, next) => {
   console.log(err);
 });
 
-
+let mongoURL = process.env.MONGO_URI;
+if (process.env.NODE_ENV == "test") {
+  mongoURL = process.env.MONGO_URI_TEST;
+}
 
 const port = process.env.PORT || 3000;
-
-const start = async () => {
+const start = () => {
   try {
-    await require("./db/connect")(process.env.MONGO_URI);
-    app.listen(port, () => console.log(`Server is listening on port ${port}...`));
+    require("./db/connect")(mongoURL);
+    return app.listen(port, () =>
+      console.log(`Server is listening on port ${port}...`),
+    );
   } catch (error) {
     console.log(error);
   }
 };
 
 start();
+
+module.exports = { app };
