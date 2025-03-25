@@ -43,7 +43,9 @@ describe("tests for registration and logon", function () {
       ? cookieValue.slice(2).split(".")[0] 
       : cookieValue.split(".")[0];
   
-    this.csrfCookie = rawCsrfCookie.split(";")[0];
+      this.csrfCookie = cookies.find((element) =>
+        element.startsWith("csrfToken"),
+    );
     this.sessionCookie = sessionCookie.split(";")[0];
   
     console.log("Extracted Token from Cookie:", extractedToken);
@@ -68,7 +70,7 @@ it("should register the user", async () => {
     email: this.user.email,
     password: this.password,
     password1: this.password,
-    _csrf: this.extractedCsrfToken, // Use the extracted token
+    _csrf: this.csrfToken,
   };
 
   const req = request
@@ -91,7 +93,7 @@ it("should log the user on", async () => {
   const dataToPost = {
     email: this.user.email,
     password: this.password,
-    _csrf: this.extractedCsrfToken, // Use the extracted token
+    _csrf: this.csrfToken, 
   };
 
   const { expect, request } = await get_chai();
